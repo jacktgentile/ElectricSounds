@@ -5,7 +5,13 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofSetBackgroundColor(0);
-	ofSetFrameRate(15);
+	smoothed_vol_ = 0.0;
+	cur_state_ = RUNNING;
+
+	circle_.c_red = 100;
+	circle_.c_green = 255;
+	circle_.c_blue = 150;
+
 	//0 output channels
 	//44100 input per second (standard)
 	//256 standard requested bufferSize
@@ -16,26 +22,36 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
+	if (cur_state_ == RUNNING) {
+		circle_.update(smoothed_vol_, max_vol_);
+		circle_two_.update(cur_vol_, max_vol_);
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	ofSetColor(230, 100, 100);
+	ofSetColor(255, 150, 150);
 	stringstream message;
-	message << "Volume:     " << fixed << setprecision(2) << cur_vol;
-	ofDrawBitmapString(message.str(), 50, 50);
-	//clear stringstream variable
-	//
+	message << "Radius: " << fixed << setprecision(2) << circle_.radius;
+	ofDrawBitmapString(message.str(), 20, 20);
 	message.str("");
-	message << "Max volume: " << fixed << setprecision(2) << max_vol;
-	ofDrawBitmapString(message.str(), 50, 70);
-	ofDrawRectangle(50, 100, cur_vol * 20.0, 50);
+	message << "Sm vol: " << fixed << setprecision(2) << smoothed_vol_;
+	ofDrawBitmapString(message.str(), 20, 40);
+
+	circle_.draw();
+	circle_two_.draw();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+	if (key == 'p') {
+		soundStream.stop();
+		cur_state_ = PAUSED;
+	}
+	else if (key == 'u') {
+		soundStream.start();
+		cur_state_ = RUNNING;
+	}
 }
 
 //--------------------------------------------------------------
@@ -85,15 +101,18 @@ void ofApp::gotMessage(ofMessage msg){
 
 void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 {
-	cur_vol = 0.0;
+	//read audio input, then estimate volume
+	cur_vol_ = 0.0;
 	for (int i = 0; i < bufferSize; i++) {
 		float temp = input[i];
-		cur_vol += abs(temp);
+		cur_vol_ += abs(temp);
 	}
-	if (cur_vol > max_vol) {
-		max_vol = cur_vol;
+	//keep track of the greatest volume
+	if (cur_vol_ > max_vol_) {
+		max_vol_ = cur_vol_;
 	}
-	//std::cout << cur_vol << endl;
+	//cur_vol changes too quickly, so adjust the smoothed_vol
+	smoothed_vol_ = (0.98 * smoothed_vol_ + 0.02 * cur_vol_);
 }
 
 //--------------------------------------------------------------
