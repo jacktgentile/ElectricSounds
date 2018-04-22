@@ -14,3 +14,5 @@
 	* Similar structures can be used for different shapes
 * Added states RUNNING and PAUSED to the program
 	* Press 'P' to Pause, 'U' to Unpause
+* "new file: .vs/ElectricSounds/v14/.suo" accidental commit message
+	* Getting the hang of committing through command line, though
