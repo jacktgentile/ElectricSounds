@@ -1,10 +1,9 @@
 #pragma once
 #include "Gist-master\src\Gist.h"
 #include "ofMain.h"
+#include <math.h>
 
 class ofApp : public ofBaseApp{
-
-	
 
 	public:
 		void setup();
@@ -39,18 +38,22 @@ class ofApp : public ofBaseApp{
 		struct circle_shape {
 			int delX, delY;
 			int posX, posY;
-			int radius;
+			int radius, delRadius;
 			int c_red, c_green, c_blue;
 			circle_shape() {
 				delX = rand() % 6 - 2;
 				if (delX == 0) delX = -3;
 				delY = rand() % 6 - 2;
 				if (delY == 0) delY = -3;
+
 				posX = rand() % ofGetWidth();
 				posY = rand() % ofGetHeight();
-				c_red = rand() % 256;
-				c_green = rand() % 256;
-				c_blue = rand() % 256;
+
+				delRadius = 100 + (rand() % 300);
+
+				c_red = 128 + rand() % 128;
+				c_green = 128 + rand() % 128;
+				c_blue = 128 + rand() % 128;
 			}
 			void draw() {
 				ofSetColor(c_red, c_green, c_blue);
@@ -73,9 +76,69 @@ class ofApp : public ofBaseApp{
 				posY += delY;
 			}
 			void update(float small, float large) {
+				radius = 20 + (delRadius * small / large);
 				move();
-				radius = 10 + (200 * small / large);
+			}
+		};
+		struct polygon_shape {
+			const float tau = 2 * M_PI;
+			int delX, delY;
+			int posX, posY;
+			int numSides;
+			float theta;
+			int radius, delRadius;
+			float angle, delAngle;
+			int c_red, c_green, c_blue;
+			polygon_shape() {
+				delX = rand() % 6 - 2;
+				if (delX == 0) delX = -3;
+				delY = rand() % 6 - 2;
+				if (delY == 0) delY = -3;
+				posX = rand() % ofGetWidth();
+				posY = rand() % ofGetHeight();
+				numSides = 3 + rand() % 4;
+				theta = tau / static_cast <float> (numSides);
+				delRadius = 100 + (rand() % 300);
+				angle = M_PI_2 * (static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
+				delAngle = angle / 3.0;
+				c_red = 128 + rand() % 128;
+				c_green = 128 + rand() % 128;
+				c_blue = 128 + rand() % 128;
+			}
+			void draw() {
+				ofSetColor(c_red, c_green, c_blue);
+				ofFill();
+				ofBeginShape();
+				for (int i = 0; i < numSides; i++) {
+					ofVertex(posX + radius * cos(angle + theta * i), posY + radius * sin(angle + theta * i));
+				}
+				ofEndShape(true);
+			}
+			void move() {
+				angle += delAngle;
+				if (angle >= tau) {
+					angle -= tau;
+				}
+				if (delX > 0 && posX > ofGetWidth() - radius) {
+					delX *= -1;
+				}
+				else if (delX < 0 && posX < radius) {
+					delX *= -1;
+				}
+				posX += delX;
+				if (delY > 0 && posY > ofGetHeight() - radius) {
+					delY *= -1;
+				}
+				else if (delY < 0 && posY < radius) {
+					delY *= -1;
+				}
+				posY += delY;
+			}
+			void update(float small, float large) {
+				radius = 30 + delRadius * (small / large);
+				move();
 			}
 		};
 		circle_shape circle_, circle_two_;
+		polygon_shape shape_, shape_two_;
 };

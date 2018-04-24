@@ -5,14 +5,12 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofSetBackgroundColor(0);
+	ofSetFrameRate(30);
 	smoothed_vol_ = 0.0;
 	cur_state_ = RUNNING;
 
-	circle_.c_red = 100;
-	circle_.c_green = 255;
-	circle_.c_blue = 150;
 
-	//0 output channels
+	//0 output channels 2 input
 	//44100 input per second (standard)
 	//256 standard requested bufferSize
 	//4 num buffers
@@ -24,7 +22,9 @@ void ofApp::setup(){
 void ofApp::update(){
 	if (cur_state_ == RUNNING) {
 		circle_.update(smoothed_vol_, max_vol_);
-		circle_two_.update(cur_vol_, max_vol_);
+		circle_two_.update(smoothed_vol_, max_vol_);
+		shape_.update(smoothed_vol_, max_vol_);
+		shape_two_.update(smoothed_vol_, max_vol_);
 	}
 }
 
@@ -32,14 +32,16 @@ void ofApp::update(){
 void ofApp::draw(){
 	ofSetColor(255, 150, 150);
 	stringstream message;
-	message << "Radius: " << fixed << setprecision(2) << circle_.radius;
+	message << "max vol: " << fixed << setprecision(2) << max_vol_;
 	ofDrawBitmapString(message.str(), 20, 20);
 	message.str("");
-	message << "Sm vol: " << fixed << setprecision(2) << smoothed_vol_;
+	message << "sm vol:  " << fixed << setprecision(2) << smoothed_vol_;
 	ofDrawBitmapString(message.str(), 20, 40);
 
 	circle_.draw();
 	circle_two_.draw();
+	shape_.draw();
+	shape_two_.draw();
 }
 
 //--------------------------------------------------------------
@@ -99,8 +101,7 @@ void ofApp::gotMessage(ofMessage msg){
 
 }
 
-void ofApp::audioIn(float * input, int bufferSize, int nChannels)
-{
+void ofApp::audioIn(float * input, int bufferSize, int nChannels){
 	//read audio input, then estimate volume
 	cur_vol_ = 0.0;
 	for (int i = 0; i < bufferSize; i++) {
@@ -112,7 +113,7 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 		max_vol_ = cur_vol_;
 	}
 	//cur_vol changes too quickly, so adjust the smoothed_vol
-	smoothed_vol_ = (0.98 * smoothed_vol_ + 0.02 * cur_vol_);
+	smoothed_vol_ = (0.9 * smoothed_vol_ + 0.1 * cur_vol_);
 }
 
 //--------------------------------------------------------------

@@ -1,5 +1,6 @@
 ﻿  main.cpp
   ofApp.cpp
+     Creating library bin\ElectricSounds_debug.lib and object bin\ElectricSounds_debug.exp
   ElectricSounds.vcxproj -> C:\Users\jackt\source\repos\openFrameworksApp11\openFrameworksApp11\of_v0.9.8_vs_release\apps\myApps\ElectricSounds\bin\ElectricSounds_debug.exe
   ElectricSounds.vcxproj -> bin\ElectricSounds_debug.pdb (Full PDB)
   

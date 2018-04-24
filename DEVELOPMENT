@@ -16,3 +16,9 @@
 	* Press 'P' to Pause, 'U' to Unpause
 * "new file: .vs/ElectricSounds/v14/.suo" accidental commit message
 	* Getting the hang of committing through command line, though
+## April 24
+* Integrated moving and rotating polygons using polygon_shape struct
+* Next steps include 
+	* Adding vecotrs of these shapes for more functionality
+	* Possibly adding more shapes or background graphics
+	* Pitch implementation still not working correctly
