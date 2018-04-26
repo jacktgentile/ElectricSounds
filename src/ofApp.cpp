@@ -2,14 +2,18 @@
 #include <iomanip>
 #include <sstream>
 
+
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofSetBackgroundColor(0);
-	ofSetFrameRate(30);
+	ofSetFrameRate(60);
 	smoothed_vol_ = 0.0;
 	cur_state_ = RUNNING;
-
-
+	//fill shape vectors with random 
+	for (int i = 0; i < 4; i++) {
+		circle_vector_.push_back(circle_shape());
+		poly_vector_.push_back(polygon_shape());
+	}
 	//0 output channels 2 input
 	//44100 input per second (standard)
 	//256 standard requested bufferSize
@@ -21,16 +25,20 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 	if (cur_state_ == RUNNING) {
-		circle_.update(smoothed_vol_, max_vol_);
-		circle_two_.update(smoothed_vol_, max_vol_);
-		shape_.update(smoothed_vol_, max_vol_);
-		shape_two_.update(smoothed_vol_, max_vol_);
+		//update each shape, can't use a for-each loop because items are being changed
+		for (int i = 0; i < circle_vector_.size(); i++) {
+			circle_vector_[i].update(smoothed_vol_, max_vol_);
+		}
+		for (int i = 0; i < poly_vector_.size(); i++) {
+			poly_vector_[i].update(smoothed_vol_, max_vol_);
+		}
 	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	ofSetColor(255, 150, 150);
+	//Display current volume values for testing
 	stringstream message;
 	message << "max vol: " << fixed << setprecision(2) << max_vol_;
 	ofDrawBitmapString(message.str(), 20, 20);
@@ -38,19 +46,23 @@ void ofApp::draw(){
 	message << "sm vol:  " << fixed << setprecision(2) << smoothed_vol_;
 	ofDrawBitmapString(message.str(), 20, 40);
 
-	circle_.draw();
-	circle_two_.draw();
-	shape_.draw();
-	shape_two_.draw();
+	//draw each shape
+	for (auto shape_ : circle_vector_) {
+		shape_.draw();
+	}
+	for (auto shape_ : poly_vector_) {
+		shape_.draw();
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-	if (key == 'p') {
+	//soundStream stops in paused state since it isn't being used
+	if (key == 'p' && cur_state_ == RUNNING) {
 		soundStream.stop();
 		cur_state_ = PAUSED;
 	}
-	else if (key == 'u') {
+	else if (key == 'p' && cur_state_ == PAUSED) {
 		soundStream.start();
 		cur_state_ = RUNNING;
 	}

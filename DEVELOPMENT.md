@@ -22,3 +22,11 @@
 	* Adding vecotrs of these shapes for more functionality
 	* Possibly adding more shapes or background graphics
 	* Pitch implementation still not working correctly
+## April 25
+* Successfully uses vectors of circle_shape and polygon_shape structs to hold graphic objects
+* 'P' now pauses and unpauses based on the current state
+	* Before, it was possible to start(stop) an already started(stopped) soundstream
+* Next steps include
+	* Detecting pitch from audio input using some library
+	* Making shapes move across the screen at a rate proportional to pitch
+	* Adding user controlled features like number of circles
