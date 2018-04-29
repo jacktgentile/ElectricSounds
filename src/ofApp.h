@@ -25,6 +25,7 @@ class ofApp : public ofBaseApp{
 
 		//--------Audio variables----------------
 		ofSoundStream soundStream;
+		ofSoundPlayer mySound;
 		void audioIn(float * input, int bufferSize, int nChannels);
 		float cur_vol_ = 0.0;
 		float smoothed_vol_ = 0.0;

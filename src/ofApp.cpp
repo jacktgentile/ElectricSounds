@@ -7,9 +7,11 @@
 void ofApp::setup(){
 	ofSetBackgroundColor(0);
 	ofSetFrameRate(60);
-	smoothed_vol_ = 0.0;
 	cur_state_ = RUNNING;
-	//fill shape vectors with random 
+	mySound.load("SORRY.wav");
+	mySound.setVolume(0.9);
+	mySound.play();
+	//fill shape vectors with 4 random 
 	for (int i = 0; i < 4; i++) {
 		circle_vector_.push_back(circle_shape());
 		poly_vector_.push_back(polygon_shape());
@@ -32,6 +34,11 @@ void ofApp::update(){
 		for (int i = 0; i < poly_vector_.size(); i++) {
 			poly_vector_[i].update(smoothed_vol_, max_vol_);
 		}
+		/*cur_pitch = ofSoundGetSpectrum(128);
+		for (int i = 0; i < 128; i++) {
+			std::cout << cur_pitch[i] << endl;
+		}
+		std::cout << endl;*/
 	}
 }
 
@@ -60,10 +67,12 @@ void ofApp::keyPressed(int key){
 	//soundStream stops in paused state since it isn't being used
 	if (key == 'p' && cur_state_ == RUNNING) {
 		soundStream.stop();
+		mySound.setPaused(true);
 		cur_state_ = PAUSED;
 	}
 	else if (key == 'p' && cur_state_ == PAUSED) {
 		soundStream.start();
+		mySound.setPaused(false);
 		cur_state_ = RUNNING;
 	}
 }
@@ -126,6 +135,7 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels){
 	}
 	//cur_vol changes too quickly, so adjust the smoothed_vol
 	smoothed_vol_ = (0.9 * smoothed_vol_ + 0.1 * cur_vol_);
+	
 }
 
 //--------------------------------------------------------------

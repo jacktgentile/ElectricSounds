@@ -30,3 +30,8 @@
 	* Detecting pitch from audio input using some library
 	* Making shapes move across the screen at a rate proportional to pitch
 	* Adding user controlled features like number of circles
+## April 28 
+* There is a pitch detection method using ofSoundGetSpectrum() in ofSoundPlayer
+* May need to change to model of the app to read audio from a file rather than live stream
+* Able to play audio using ofSoundPlayer, but it does not show in audioOut(...) which causes some problems
+	* Without being able to read in audioOut, I need to find a way to measure volume
