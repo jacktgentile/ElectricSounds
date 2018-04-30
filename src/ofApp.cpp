@@ -4,46 +4,50 @@
 
 
 //--------------------------------------------------------------
-void ofApp::setup(){
+void ofApp::setup() {
 	ofSetBackgroundColor(0);
-	ofSetFrameRate(60);
+	ofSetFrameRate(50);
 	cur_state_ = RUNNING;
-	mySound.load("SORRY.wav");
-	mySound.setVolume(0.9);
+
+	//start the song at this file in bin/data/
+	mySound.load("songs/hold_up.wav");
+	mySound.setVolume(0.8);
 	mySound.play();
+
 	//fill shape vectors with 4 random 
 	for (int i = 0; i < 4; i++) {
 		circle_vector_.push_back(circle_shape());
 		poly_vector_.push_back(polygon_shape());
 	}
-	//0 output channels 2 input
-	//44100 input per second (standard)
-	//256 standard requested bufferSize
-	//4 num buffers
-	//http://openframeworks.cc/documentation/sound/ofSoundStream/#show_setup
-	soundStream.setup(this, 0, 2, 44100, 256, 4);
 }
 
 //--------------------------------------------------------------
-void ofApp::update(){
+void ofApp::update() {
 	if (cur_state_ == RUNNING) {
-		//update each shape, can't use a for-each loop because items are being changed
+		//calculate cur_vol_ as sum of floats in spectrum
+		cur_vol_ = 0.0f;
+		float * input = ofSoundGetSpectrum(num_bands_);
+		for (int i = 0; i < num_bands_; i++) {
+			cur_vol_ += input[i];
+		}
+		//keep track of the greatest volume
+		if (cur_vol_ > max_vol_) {
+			max_vol_ = cur_vol_;
+		}
+		//cur_vol changes too quickly, so adjust the smoothed_vol
+		smoothed_vol_ = (0.9 * smoothed_vol_ + 0.1 * cur_vol_);
+		//can't use a for-each loop because items are being modified
 		for (int i = 0; i < circle_vector_.size(); i++) {
 			circle_vector_[i].update(smoothed_vol_, max_vol_);
 		}
 		for (int i = 0; i < poly_vector_.size(); i++) {
 			poly_vector_[i].update(smoothed_vol_, max_vol_);
 		}
-		/*cur_pitch = ofSoundGetSpectrum(128);
-		for (int i = 0; i < 128; i++) {
-			std::cout << cur_pitch[i] << endl;
-		}
-		std::cout << endl;*/
 	}
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
+void ofApp::draw() {
 	ofSetColor(255, 150, 150);
 	//Display current volume values for testing
 	stringstream message;
@@ -54,11 +58,19 @@ void ofApp::draw(){
 	ofDrawBitmapString(message.str(), 20, 40);
 
 	//draw each shape
-	for (auto shape_ : circle_vector_) {
-		shape_.draw();
+	if (circle_vector_.size() > poly_vector_.size()) {
+		for (int i = poly_vector_.size(); i < circle_vector_.size(); i++) {
+			circle_vector_[i].draw();
+		}
 	}
-	for (auto shape_ : poly_vector_) {
-		shape_.draw();
+	else if (poly_vector_.size() > circle_vector_.size()) {
+		for (int i = circle_vector_.size(); i < poly_vector_.size(); i++) {
+			poly_vector_[i].draw();
+		}
+	}
+	for (int i = 0; i < circle_vector_.size() && i < poly_vector_.size(); i++) {
+		circle_vector_[i].draw();
+		poly_vector_[i].draw();
 	}
 }
 
@@ -66,14 +78,24 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key){
 	//soundStream stops in paused state since it isn't being used
 	if (key == 'p' && cur_state_ == RUNNING) {
-		soundStream.stop();
 		mySound.setPaused(true);
 		cur_state_ = PAUSED;
 	}
 	else if (key == 'p' && cur_state_ == PAUSED) {
-		soundStream.start();
 		mySound.setPaused(false);
 		cur_state_ = RUNNING;
+	}
+	if (key == 'u' && circle_vector_.size() < 10) {
+		circle_vector_.push_back(circle_shape());
+	}
+	if (key == 'j' && circle_vector_.size() > 0) {
+		circle_vector_.pop_back();
+	}
+	if (key == 'i' && poly_vector_.size() < 10) {
+		poly_vector_.push_back(polygon_shape());
+	}
+	if (key == 'k' && poly_vector_.size() > 0) {
+		poly_vector_.pop_back();
 	}
 }
 
@@ -120,22 +142,6 @@ void ofApp::windowResized(int w, int h){
 //--------------------------------------------------------------
 void ofApp::gotMessage(ofMessage msg){
 
-}
-
-void ofApp::audioIn(float * input, int bufferSize, int nChannels){
-	//read audio input, then estimate volume
-	cur_vol_ = 0.0;
-	for (int i = 0; i < bufferSize; i++) {
-		float temp = input[i];
-		cur_vol_ += abs(temp);
-	}
-	//keep track of the greatest volume
-	if (cur_vol_ > max_vol_) {
-		max_vol_ = cur_vol_;
-	}
-	//cur_vol changes too quickly, so adjust the smoothed_vol
-	smoothed_vol_ = (0.9 * smoothed_vol_ + 0.1 * cur_vol_);
-	
 }
 
 //--------------------------------------------------------------

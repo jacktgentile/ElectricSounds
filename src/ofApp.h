@@ -1,5 +1,4 @@
 #pragma once
-#include "Gist-master\src\Gist.h"
 #include "ofMain.h"
 #include <math.h>
 #include <vector>
@@ -24,12 +23,11 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
 		//--------Audio variables----------------
-		ofSoundStream soundStream;
 		ofSoundPlayer mySound;
-		void audioIn(float * input, int bufferSize, int nChannels);
-		float cur_vol_ = 0.0;
-		float smoothed_vol_ = 0.0;
-		float max_vol_ = 0.0;
+		const int num_bands_ = 256;
+		float cur_vol_ = 0.0f;
+		float smoothed_vol_ = 0.0f;
+		float max_vol_ = 0.0f;
 
 		//--------App State----------------------
 		enum state {
@@ -53,11 +51,11 @@ class ofApp : public ofBaseApp{
 				posX = rand() % ofGetWidth();
 				posY = rand() % ofGetHeight();
 
-				delRadius = 100 + (rand() % 300);
+				delRadius = 100 + (rand() % 100);
 
-				c_red = 128 + rand() % 128;
-				c_green = 128 + rand() % 128;
-				c_blue = 128 + rand() % 128;
+				c_red = 200 + rand() % 56;
+				c_green = rand() % 128;
+				c_blue = rand() % 128;
 			}
 			void draw() {
 				ofSetColor(c_red, c_green, c_blue);
@@ -94,21 +92,26 @@ class ofApp : public ofBaseApp{
 			float angle, delAngle;
 			int c_red, c_green, c_blue;
 			polygon_shape() {
-				tau = 2 * M_PI;
 				delX = rand() % 10 - 5;
 				if (delX == 0) delX = 5;
 				delY = rand() % 10 - 5;
 				if (delY == 0) delY = 5;
+
 				posX = rand() % ofGetWidth();
 				posY = rand() % ofGetHeight();
+
+				tau = M_TWO_PI;
 				numSides = 3 + rand() % 6;
 				theta = tau / static_cast <float> (numSides);
-				delRadius = 100 + (rand() % 300);
-				angle = M_PI_2 * (static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
-				delAngle = angle / 12.0;
-				c_red = 128 + rand() % 128;
-				c_green = 128 + rand() % 128;
-				c_blue = 128 + rand() % 128;
+
+				delRadius = 100 + (rand() % 100);
+
+				angle = tau * (static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
+				delAngle = angle / 50.0;
+
+				c_red = rand() % 128;
+				c_green = 200 + rand() % 56;
+				c_blue = 200 + rand() % 56;
 			}
 			void draw() {
 				ofSetColor(c_red, c_green, c_blue);

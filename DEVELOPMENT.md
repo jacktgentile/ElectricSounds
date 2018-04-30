@@ -35,3 +35,9 @@
 * May need to change to model of the app to read audio from a file rather than live stream
 * Able to play audio using ofSoundPlayer, but it does not show in audioOut(...) which causes some problems
 	* Without being able to read in audioOut, I need to find a way to measure volume
+## April 29-30
+* User able to control the number of shapes on screen using u,j,i,k keys
+* Since pitch will be a big part of this project, I've decided to use ofSoundPlayer instead of ofSoundStream
+	* Read and play audio from a file in bin/data/songs
+	* Calculates volume using ofSoundGetSpectrum, which can later be used to find relative pitch
+* Pitch will be calculated using either FFT or finding the index of the greatest value
