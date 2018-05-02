@@ -24,7 +24,8 @@ class ofApp : public ofBaseApp{
 
 		//--------Audio variables----------------
 		ofSoundPlayer mySound;
-		const int num_bands_ = 256;
+		const int num_bands_ = 512;
+		float smoothed_spec_[512];
 		float cur_vol_ = 0.0f;
 		float smoothed_vol_ = 0.0f;
 		float max_vol_ = 0.0f;
@@ -32,7 +33,9 @@ class ofApp : public ofBaseApp{
 		//--------App State----------------------
 		enum state {
 			RUNNING = 0,
-			PAUSED
+			INFO_RUNNING,
+			PAUSED,
+			INFO_PAUSED
 		};
 		state cur_state_;
 
@@ -41,24 +44,22 @@ class ofApp : public ofBaseApp{
 			int delX, delY;
 			int posX, posY;
 			int radius, delRadius;
-			int c_red, c_green, c_blue;
+			ofColor color_ = ofColor(124, 239, 36);
 			circle_shape() {
-				delX = rand() % 10 - 5;
+				delX = ofRandom(-5, 4);
 				if (delX == 0) delX = 5;
-				delY = rand() % 10 - 5;
+				delY = ofRandom(-5, 4);
 				if (delY == 0) delY = 5;
 
-				posX = rand() % ofGetWidth();
-				posY = rand() % ofGetHeight();
+				posX = ofRandom(ofGetWidth());
+				posY = ofRandom(ofGetHeight());
 
-				delRadius = 100 + (rand() % 100);
+				delRadius = ofRandom(100, 200);
 
-				c_red = 200 + rand() % 56;
-				c_green = rand() % 128;
-				c_blue = rand() % 128;
+				color_.setHue(ofRandom(48, 68));
 			}
 			void draw() {
-				ofSetColor(c_red, c_green, c_blue);
+				ofSetColor(color_);
 				ofDrawCircle(posX, posY, radius);
 			}
 			void move() {
@@ -90,31 +91,28 @@ class ofApp : public ofBaseApp{
 			float theta;
 			int radius, delRadius;
 			float angle, delAngle;
-			int c_red, c_green, c_blue;
+			ofColor color_ = ofColor(132, 255, 38);
 			polygon_shape() {
-				delX = rand() % 10 - 5;
+				delX = ofRandom(-5, 4);
 				if (delX == 0) delX = 5;
-				delY = rand() % 10 - 5;
+				delY = ofRandom(-5, 4);
 				if (delY == 0) delY = 5;
 
-				posX = rand() % ofGetWidth();
-				posY = rand() % ofGetHeight();
+				posX = ofRandom(ofGetWidth());
+				posY = ofRandom(ofGetHeight());
 
 				tau = M_TWO_PI;
-				numSides = 3 + rand() % 6;
+				numSides = ofRandom(3, 8);
 				theta = tau / static_cast <float> (numSides);
 
-				delRadius = 100 + (rand() % 100);
+				delRadius = ofRandom(100, 200);
 
 				angle = tau * (static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 				delAngle = angle / 50.0;
-
-				c_red = rand() % 128;
-				c_green = 200 + rand() % 56;
-				c_blue = 200 + rand() % 56;
+				color_.setHue(ofRandom(48, 64));
 			}
 			void draw() {
-				ofSetColor(c_red, c_green, c_blue);
+				ofSetColor(color_);
 				ofFill();
 				ofBeginShape();
 				for (int i = 0; i < numSides; i++) {

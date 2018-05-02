@@ -8,10 +8,13 @@ void ofApp::setup() {
 	ofSetBackgroundColor(0);
 	ofSetFrameRate(50);
 	cur_state_ = RUNNING;
+	for (int i = 0; i < num_bands_; i++) {
+		smoothed_spec_[i] = 0.0f;
+	}
 
 	//start the song at this file in bin/data/
-	mySound.load("songs/hold_up.wav");
-	mySound.setVolume(0.8);
+	mySound.load("songs/6-inch.wav");
+	mySound.setVolume(1.0);
 	mySound.play();
 
 	//fill shape vectors with 4 random 
@@ -23,12 +26,15 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	if (cur_state_ == RUNNING) {
+	if (cur_state_ == RUNNING || cur_state_ == INFO_RUNNING) {
 		//calculate cur_vol_ as sum of floats in spectrum
 		cur_vol_ = 0.0f;
-		float * input = ofSoundGetSpectrum(num_bands_);
+		float * output = ofSoundGetSpectrum(num_bands_);
+		int max_pitch_ = 0;
 		for (int i = 0; i < num_bands_; i++) {
-			cur_vol_ += input[i];
+			smoothed_spec_[i] = 0.9 * smoothed_spec_[i] + 0.1 * output[i];
+			cur_vol_ += output[i];
+			
 		}
 		//keep track of the greatest volume
 		if (cur_vol_ > max_vol_) {
@@ -48,14 +54,14 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-	ofSetColor(255, 150, 150);
-	//Display current volume values for testing
-	stringstream message;
-	message << "max vol: " << fixed << setprecision(2) << max_vol_;
-	ofDrawBitmapString(message.str(), 20, 20);
-	message.str("");
-	message << "sm vol:  " << fixed << setprecision(2) << smoothed_vol_;
-	ofDrawBitmapString(message.str(), 20, 40);
+	//draw smoothed spectrum in both corners
+	ofSetColor(209, 31, 203);
+	for (int i = 0; i < num_bands_; i++) {
+		float strength = smoothed_spec_[i];
+		float bar_width = 2 * ofGetWidth() / num_bands_;
+		ofDrawRectangle((bar_width + 2) * i, 0, bar_width, ofGetHeight() * smoothed_spec_[i]);
+		ofDrawRectangle(ofGetWidth() - ((bar_width + 2) * i), ofGetHeight(), bar_width, -1 * ofGetHeight() * smoothed_spec_[i]);
+	}
 
 	//draw each shape
 	if (circle_vector_.size() > poly_vector_.size()) {
@@ -72,18 +78,65 @@ void ofApp::draw() {
 		circle_vector_[i].draw();
 		poly_vector_[i].draw();
 	}
+
+	//draw info table if state is info
+	if (cur_state_ == INFO_RUNNING || cur_state_ == INFO_PAUSED) {
+		ofSetColor(241, 36, 94);
+		stringstream message;
+		message << "volume: " << fixed << setprecision(2) << mySound.getVolume();
+		ofDrawBitmapString(message.str(), 50, ofGetHeight() - 150);
+		ofDrawBitmapString("i for info", 50, ofGetHeight() - 130);
+		ofDrawBitmapString("p for pause", 50, ofGetHeight() - 110);
+		ofDrawBitmapString("+/- for volume", 50, ofGetHeight() - 90);
+		ofDrawBitmapString("u/j change circle count", 50, ofGetHeight() - 70);
+		ofDrawBitmapString("y/h change polygon count", 50, ofGetHeight() - 50);
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 	//soundStream stops in paused state since it isn't being used
-	if (key == 'p' && cur_state_ == RUNNING) {
-		mySound.setPaused(true);
-		cur_state_ = PAUSED;
+	if (key == 'p') {
+		switch (cur_state_)
+		{
+		case ofApp::RUNNING:
+			cur_state_ = ofApp::PAUSED;
+			mySound.setPaused(true);
+			break;
+		case ofApp::INFO_RUNNING:
+			cur_state_ = ofApp::INFO_PAUSED;
+			mySound.setPaused(true);
+			break;
+		case ofApp::PAUSED:
+			cur_state_ = ofApp::RUNNING;
+			mySound.setPaused(false);
+			break;
+		case ofApp::INFO_PAUSED:
+			cur_state_ = ofApp::INFO_RUNNING;
+			mySound.setPaused(false);
+			break;
+		default:
+			break;
+		}
 	}
-	else if (key == 'p' && cur_state_ == PAUSED) {
-		mySound.setPaused(false);
-		cur_state_ = RUNNING;
+	if (key == 'i') {
+		switch (cur_state_)
+		{
+		case ofApp::RUNNING:
+			cur_state_ = INFO_RUNNING;
+			break;
+		case ofApp::INFO_RUNNING:
+			cur_state_ = RUNNING;
+			break;
+		case ofApp::PAUSED:
+			cur_state_ = INFO_PAUSED;
+			break;
+		case ofApp::INFO_PAUSED:
+			cur_state_ = PAUSED;
+			break;
+		default:
+			break;
+		}
 	}
 	if (key == 'u' && circle_vector_.size() < 10) {
 		circle_vector_.push_back(circle_shape());
@@ -91,12 +144,23 @@ void ofApp::keyPressed(int key){
 	if (key == 'j' && circle_vector_.size() > 0) {
 		circle_vector_.pop_back();
 	}
-	if (key == 'i' && poly_vector_.size() < 10) {
+	if (key == 'y' && poly_vector_.size() < 10) {
 		poly_vector_.push_back(polygon_shape());
 	}
-	if (key == 'k' && poly_vector_.size() > 0) {
+	if (key == 'h' && poly_vector_.size() > 0) {
 		poly_vector_.pop_back();
 	}
+	if (key == '-') {
+		if (mySound.getVolume() > 0) {
+			mySound.setVolume(mySound.getVolume() - 0.05);
+		}
+	}
+	if (key == '=') {
+		if (mySound.getVolume() < 1) {
+			mySound.setVolume(mySound.getVolume() + 0.05);
+		}
+	}
+
 }
 
 //--------------------------------------------------------------
