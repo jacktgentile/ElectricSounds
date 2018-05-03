@@ -35,7 +35,7 @@
 * May need to change to model of the app to read audio from a file rather than live stream
 * Able to play audio using ofSoundPlayer, but it does not show in audioOut(...) which causes some problems
 	* Without being able to read in audioOut, I need to find a way to measure volume
-## April 29-May 1
+## April 29-May 2
 * User able to control the number of shapes on screen using u,j,i,k keys
 * Since pitch will be a big part of this project, I've decided to use ofSoundPlayer instead of ofSoundStream
 	* Read and play audio from a file in bin/data/songs
@@ -45,3 +45,4 @@
 	* Switch triggered by pressing 'i' key
 * Added spectrum display at top and bottom of screen
 * Changed color system using [Paletton](http://paletton.com/#uid=34X0u0krgJKgoRfm5N6AvGBEbrO) to choose complementary colors
+* Added more features like fastforward and rewind, time in the song, etc.

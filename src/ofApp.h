@@ -4,7 +4,7 @@
 #include <vector>
 
 class ofApp : public ofBaseApp{
-
+	static string ms_to_time(int ms);
 	public:
 		void setup();
 		void update();
@@ -29,6 +29,8 @@ class ofApp : public ofBaseApp{
 		float cur_vol_ = 0.0f;
 		float smoothed_vol_ = 0.0f;
 		float max_vol_ = 0.0f;
+		int position_ms_ = 0;
+		int max_position_ms_;
 
 		//--------App State----------------------
 		enum state {

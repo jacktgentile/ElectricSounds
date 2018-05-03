@@ -3,6 +3,21 @@
 #include <sstream>
 
 
+//convert time in milliseconds to a string of form min:sec
+string ofApp::ms_to_time(int ms)
+{
+	stringstream time_str;
+	int time_sec = ms / 1000;
+	int time_min = time_sec / 60;
+	time_sec = time_sec % 60;
+	time_str << time_min << ":";
+	if (time_sec < 10) {
+		time_str << 0;
+	}
+	time_str << time_sec;
+	return time_str.str();
+}
+
 //--------------------------------------------------------------
 void ofApp::setup() {
 	ofSetBackgroundColor(0);
@@ -12,10 +27,16 @@ void ofApp::setup() {
 		smoothed_spec_[i] = 0.0f;
 	}
 
-	//start the song at this file in bin/data/
+	//play the song at this file in bin/data/
+	//calc the length of the song inspired by this https://forum.openframeworks.cc/t/ofsoundplayer-length/11560
 	mySound.load("songs/6-inch.wav");
-	mySound.setVolume(1.0);
+	mySound.setVolume(0.0);
 	mySound.play();
+	mySound.setPosition(0.9999999f);
+	max_position_ms_ = mySound.getPositionMS();
+	mySound.setPosition(0);
+	mySound.setVolume(0.8);
+	mySound.setLoop(true);
 
 	//fill shape vectors with 4 random 
 	for (int i = 0; i < 4; i++) {
@@ -27,6 +48,7 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 	if (cur_state_ == RUNNING || cur_state_ == INFO_RUNNING) {
+		position_ms_ = mySound.getPositionMS();
 		//calculate cur_vol_ as sum of floats in spectrum
 		cur_vol_ = 0.0f;
 		float * output = ofSoundGetSpectrum(num_bands_);
@@ -84,18 +106,22 @@ void ofApp::draw() {
 		ofSetColor(241, 36, 94);
 		stringstream message;
 		message << "volume: " << fixed << setprecision(2) << mySound.getVolume();
+		ofDrawBitmapString(message.str(), 50, ofGetHeight() - 170);
+		message.str("");
+		message << ms_to_time(position_ms_) << " / " << ms_to_time(max_position_ms_);
 		ofDrawBitmapString(message.str(), 50, ofGetHeight() - 150);
 		ofDrawBitmapString("i for info", 50, ofGetHeight() - 130);
 		ofDrawBitmapString("p for pause", 50, ofGetHeight() - 110);
 		ofDrawBitmapString("+/- for volume", 50, ofGetHeight() - 90);
 		ofDrawBitmapString("u/j change circle count", 50, ofGetHeight() - 70);
 		ofDrawBitmapString("y/h change polygon count", 50, ofGetHeight() - 50);
+		ofDrawBitmapString("arrow keys to fast forward/rewind", 50, ofGetHeight() - 30);
 	}
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-	//soundStream stops in paused state since it isn't being used
+	//toggle paused state
 	if (key == 'p') {
 		switch (cur_state_)
 		{
@@ -119,6 +145,7 @@ void ofApp::keyPressed(int key){
 			break;
 		}
 	}
+	//toggle info display
 	if (key == 'i') {
 		switch (cur_state_)
 		{
@@ -138,29 +165,47 @@ void ofApp::keyPressed(int key){
 			break;
 		}
 	}
+	//change num of circles
 	if (key == 'u' && circle_vector_.size() < 10) {
 		circle_vector_.push_back(circle_shape());
 	}
 	if (key == 'j' && circle_vector_.size() > 0) {
 		circle_vector_.pop_back();
 	}
+	//change num of polygons
 	if (key == 'y' && poly_vector_.size() < 10) {
 		poly_vector_.push_back(polygon_shape());
 	}
 	if (key == 'h' && poly_vector_.size() > 0) {
 		poly_vector_.pop_back();
 	}
+	//decrease volume
 	if (key == '-') {
 		if (mySound.getVolume() > 0) {
 			mySound.setVolume(mySound.getVolume() - 0.05);
 		}
 	}
+	//increase volume
 	if (key == '=') {
 		if (mySound.getVolume() < 1) {
 			mySound.setVolume(mySound.getVolume() + 0.05);
 		}
 	}
-
+	//rewind 10 seconds
+	if (key == OF_KEY_LEFT) {
+		if (position_ms_ <= 10000) {
+			mySound.setPositionMS(0);
+		}
+		else {
+			mySound.setPositionMS(position_ms_ - 10000);
+		}
+	}
+	//fast forward 10 seconds
+	if (key == OF_KEY_RIGHT) {
+		if (position_ms_ + 10000 < max_position_ms_) {
+			mySound.setPositionMS(position_ms_ + 10000);
+		}
+	}
 }
 
 //--------------------------------------------------------------
